@@ -198,7 +198,7 @@ public sealed partial class AdminVerbSystem
             },
             Impact = LogImpact.High,
             Message = Loc.GetString("admin-verb-text-make-blob"),
-	    };
+        };
         args.Verbs.Add(blobAntag);
 
         // Goobstation - Wizard
@@ -215,5 +215,7 @@ public sealed partial class AdminVerbSystem
             Message = Loc.GetString("admin-verb-text-make-wizard"),
         };
         args.Verbs.Add(wizard);
+
+        // Malf IA code is not here! see SharedStationAiSystem
     }
 }

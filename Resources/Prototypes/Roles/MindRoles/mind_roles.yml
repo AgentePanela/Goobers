@@ -213,3 +213,12 @@
   - type: MindcontrolledRole
 
 # goob edit end
+
+# malfAi
+- type: entity
+  parent: BaseMindRoleAntag
+  id: MindRoleMalfAi
+  name: MalfAi Role
+  components:
+  - type: MindRole
+# malfAi - end

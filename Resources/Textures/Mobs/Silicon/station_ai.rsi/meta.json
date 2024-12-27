@@ -56,6 +56,9 @@
     },
     {
       "name": "base"
+    },
+    {
+      "name":"malf_icon"
     }
   ]
 }
