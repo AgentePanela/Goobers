@@ -70,7 +70,7 @@ namespace Content.Shared.Silicons.StationAi;
 public abstract partial class SharedStationAiSystem : EntitySystem
 {
     [Dependency] private readonly   ISharedAdminManager _admin = default!;
-    [Dependency] private readonly   IGameTiming _timing = default!;
+    [Dependency] protected readonly   IGameTiming _timing = default!;
     [Dependency] private readonly   INetManager _net = default!;
     [Dependency] private readonly   ItemSlotsSystem _slots = default!;
     [Dependency] private readonly   ItemToggleSystem _toggles = default!;
@@ -87,7 +87,7 @@ public abstract partial class SharedStationAiSystem : EntitySystem
     [Dependency] protected readonly SharedMapSystem Maps = default!;
     [Dependency] private readonly   SharedMindSystem _mind = default!;
     [Dependency] private readonly   SharedMoverController _mover = default!;
-    [Dependency] private readonly   SharedPopupSystem _popup = default!;
+    [Dependency] protected readonly SharedPopupSystem _popup = default!;
     [Dependency] private readonly   SharedPowerReceiverSystem PowerReceiver = default!;
     [Dependency] private readonly   SharedTransformSystem _xforms = default!;
     [Dependency] private readonly   SharedUserInterfaceSystem _uiSystem = default!;
@@ -141,7 +141,6 @@ public abstract partial class SharedStationAiSystem : EntitySystem
         SubscribeLocalEvent<StationAiCoreComponent, EntRemovedFromContainerMessage>(OnAiRemove);
         SubscribeLocalEvent<StationAiCoreComponent, MapInitEvent>(OnAiMapInit);
         SubscribeLocalEvent<StationAiCoreComponent, ComponentShutdown>(OnAiShutdown);
-        SubscribeLocalEvent<StationAiCoreComponent, PowerChangedEvent>(OnCorePower);
         SubscribeLocalEvent<StationAiCoreComponent, GetVerbsEvent<Verb>>(OnCoreVerbs);
     }
 
@@ -337,16 +336,27 @@ public abstract partial class SharedStationAiSystem : EntitySystem
             return;
         }
 
+        var ev = new IntellicardAttemptEvent(args.Used, args.User);
+        RaiseLocalEvent(args.Target.Value, ev);
+
+        if (ev.Cancelled)
+            return;
+
         if (TryGetHeld((args.Target.Value, targetHolder), out var held) && _timing.CurTime > intelliComp.NextWarningAllowed)
         {
+            RaiseLocalEvent(held, ev);
+
+            if (ev.Cancelled)
+                return;
+
             intelliComp.NextWarningAllowed = _timing.CurTime + intelliComp.WarningDelay;
-            AnnounceIntellicardUsage(held, intelliComp.WarningSound);
+            AnnounceAi(held, cue: intelliComp.WarningSound);
         }
 
         // Corvax-Next-AiRemoteControl-Start
         if (TryComp<StationAiHeldComponent>(held, out var heldComp))
             if (heldComp.CurrentConnectedEntity != null)
-                AnnounceIntellicardUsage(heldComp.CurrentConnectedEntity.Value, intelliComp.WarningSound);
+                AnnounceAi(heldComp.CurrentConnectedEntity.Value, cue: intelliComp.WarningSound);
         // Corvax-Next-AiRemoteControl-End
 
         var doAfterArgs = new DoAfterArgs(EntityManager, args.User, cardHasAi ? intelliComp.UploadTime : intelliComp.DownloadTime, new IntellicardDoAfterEvent(), args.Target, ent.Owner)
@@ -397,20 +407,8 @@ public abstract partial class SharedStationAiSystem : EntitySystem
         ent.Comp.RemoteEntity = null;
     }
 
-    private void OnCorePower(Entity<StationAiCoreComponent> ent, ref PowerChangedEvent args)
+    protected virtual void OnCorePower(Entity<StationAiCoreComponent> ent, ref PowerChangedEvent args)
     {
-        // TODO: I think in 13 they just straightup die so maybe implement that
-        if (args.Powered)
-        {
-            if (!SetupEye(ent))
-                return;
-
-            AttachEye(ent);
-        }
-        else
-        {
-            ClearEye(ent);
-        }
     }
 
     private void OnAiMapInit(Entity<StationAiCoreComponent> ent, ref MapInitEvent args)
@@ -452,7 +450,7 @@ public abstract partial class SharedStationAiSystem : EntitySystem
             _eye.SetDrawFov(user.Value, !isRemote);
     }
 
-    private bool SetupEye(Entity<StationAiCoreComponent> ent, EntityCoordinates? coords = null)
+    protected bool SetupEye(Entity<StationAiCoreComponent> ent, EntityCoordinates? coords = null)
     {
         if (_net.IsClient)
             return false;
@@ -477,7 +475,7 @@ public abstract partial class SharedStationAiSystem : EntitySystem
         return true;
     }
 
-    private void ClearEye(Entity<StationAiCoreComponent> ent)
+    protected void ClearEye(Entity<StationAiCoreComponent> ent)
     {
         if (_net.IsClient)
             return;
@@ -487,7 +485,7 @@ public abstract partial class SharedStationAiSystem : EntitySystem
         Dirty(ent);
     }
 
-    private void AttachEye(Entity<StationAiCoreComponent> ent)
+    protected void AttachEye(Entity<StationAiCoreComponent> ent)
     {
         if (ent.Comp.RemoteEntity == null)
             return;
@@ -582,7 +580,7 @@ public abstract partial class SharedStationAiSystem : EntitySystem
         _appearance.SetData(entity.Owner, StationAiVisualState.Key, state);
     }
 
-    public virtual void AnnounceIntellicardUsage(EntityUid uid, SoundSpecifier? cue = null) { }
+    public virtual void AnnounceAi(EntityUid uid, string msg = "ai-consciousness-download-warning", SoundSpecifier? cue = null) { }
 
     public virtual bool SetVisionEnabled(Entity<StationAiVisionComponent> entity, bool enabled, bool announce = false)
     {
@@ -623,6 +621,18 @@ public abstract partial class SharedStationAiSystem : EntitySystem
 public sealed partial class JumpToCoreEvent : InstantActionEvent
 {
 
+}
+
+public sealed partial class IntellicardAttemptEvent : CancellableEntityEventArgs
+{
+    public EntityUid Intellicard;
+    public EntityUid User;
+
+    public IntellicardAttemptEvent(EntityUid intellicard, EntityUid user)
+    {
+        Intellicard = intellicard;
+        User = user;
+    }
 }
 
 [Serializable, NetSerializable]

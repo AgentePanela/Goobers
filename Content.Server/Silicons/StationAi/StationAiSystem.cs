@@ -38,7 +38,7 @@ using static Content.Server.Chat.Systems.ChatSystem;
 
 namespace Content.Server.Silicons.StationAi;
 
-public sealed class StationAiSystem : SharedStationAiSystem
+public sealed partial class StationAiSystem : SharedStationAiSystem
 {
     [Dependency] private readonly IChatManager _chats = default!;
     [Dependency] private readonly EntityLookupSystem _lookup = default!;
@@ -51,8 +51,14 @@ public sealed class StationAiSystem : SharedStationAiSystem
     public override void Initialize()
     {
         base.Initialize();
+        InitializePower(); // Goobs/Mira - AI power death
 
         SubscribeLocalEvent<ExpandICChatRecipientsEvent>(OnExpandICChatRecipients);
+    }
+
+    public override void Update(float frameTime) // Goobs/Mira - AI power death
+    {
+        UpdatePower(frameTime);
     }
 
     private void OnExpandICChatRecipients(ExpandICChatRecipientsEvent ev)
@@ -112,12 +118,12 @@ public sealed class StationAiSystem : SharedStationAiSystem
         return true;
     }
 
-    public override void AnnounceIntellicardUsage(EntityUid uid, SoundSpecifier? cue = null)
+    // Goobs/Mira change
+    public override void AnnounceAi(EntityUid uid, string msg = "ai-consciousness-download-warning", SoundSpecifier? cue = null)
     {
         if (!TryComp<ActorComponent>(uid, out var actor))
             return;
 
-        var msg = Loc.GetString("ai-consciousness-download-warning");
         var wrappedMessage = Loc.GetString("chat-manager-server-wrap-message", ("message", msg));
         _chats.ChatMessageToOne(ChatChannel.Server, msg, wrappedMessage, default, false, actor.PlayerSession.Channel, colorOverride: Color.Red);
 

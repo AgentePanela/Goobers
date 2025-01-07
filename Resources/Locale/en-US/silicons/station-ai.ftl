@@ -53,3 +53,5 @@ station-ai-hologram-male = Male appearance
 station-ai-hologram-face = Disembodied head
 station-ai-hologram-cat = Cat form
 station-ai-hologram-dog = Corgi form
+
+ai-power-warning = Your core is losing power.
