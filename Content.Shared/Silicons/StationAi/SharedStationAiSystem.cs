@@ -28,9 +28,6 @@ using Robust.Shared.Prototypes;
 using Robust.Shared.Serialization;
 using Robust.Shared.Timing;
 using System.Diagnostics.CodeAnalysis;
-using Robust.Shared.Player; //malfAi - start
-using Content.Shared.Administration;
-using Robust.Shared.Utility; //malfAi - end
 
 namespace Content.Shared.Silicons.StationAi;
 
@@ -131,32 +128,7 @@ public abstract partial class SharedStationAiSystem : EntitySystem
                 Impact = LogImpact.High,
             });
         }
-
-        // Gabystation - Malf AI
-        if (!_admin.HasAdminFlag(args.User, AdminFlags.Fun))
-        {
-            return;
-        }
-
-        Verb malfAi = new() //todo: loc strings
-        {
-            Text = Loc.GetString("admin-verb-make-malf"),
-            Category = VerbCategory.Antag,
-            Icon = new SpriteSpecifier.Rsi(new ResPath("/Textures/Mobs/Silicon/station_ai.rsi"), "malf_icon"),
-            Act = () =>
-            {
-                //todo: verify if ai have a mind
-                TryGetHeld((ent.Owner, ent.Comp), out var targetUid);
-                _mind.TryGetSession(targetUid, out var targetSession);
-                MakeMalf(targetSession);
-            },
-            Impact = LogImpact.High,
-            Message = Loc.GetString("admin-verb-text-make-malf"),
-        };
-        args.Verbs.Add(malfAi);
     }
-
-    public virtual void MakeMalf(ICommonSession? targetPlayer) { }
 
     private void OnAiAccessible(Entity<StationAiOverlayComponent> ent, ref AccessibleOverrideEvent args)
     {

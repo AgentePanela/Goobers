@@ -10,10 +10,6 @@ using Robust.Shared.Audio;
 using Robust.Shared.Map.Components;
 using Robust.Shared.Player;
 using static Content.Server.Chat.Systems.ChatSystem;
-// MalfAi start
-using Content.Server._Gabystation.GameTicking.Rules.Components;
-using Content.Server.Antag;
-// MalfAi end
 
 namespace Content.Server.Silicons.StationAi;
 
@@ -24,7 +20,6 @@ public sealed class StationAiSystem : SharedStationAiSystem
     [Dependency] private readonly SharedTransformSystem _xforms = default!;
     [Dependency] private readonly SharedMindSystem _mind = default!;
     [Dependency] private readonly SharedRoleSystem _roles = default!;
-    [Dependency] private readonly AntagSelectionSystem _antag = default!; // MalfAI
 
     private readonly HashSet<Entity<StationAiCoreComponent>> _ais = new();
 
@@ -134,11 +129,5 @@ public sealed class StationAiSystem : SharedStationAiSystem
 
         _chats.ChatMessageToMany(ChatChannel.Notifications, msg, msg, entity, false, true, filter.Recipients.Select(o => o.Channel));
         // Apparently there's no sound for this.
-    }
-
-    // MalfAi
-    public override void MakeMalf(ICommonSession? targetPlayer)
-    {
-        _antag.ForceMakeAntag<MalfAiRuleComponent>(targetPlayer, "MalfAi");
     }
 }

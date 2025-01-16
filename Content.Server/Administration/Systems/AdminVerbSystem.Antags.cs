@@ -12,6 +12,8 @@ using Content.Shared.Verbs;
 using Robust.Shared.Player;
 using Robust.Shared.Prototypes;
 using Robust.Shared.Utility;
+using Content.Shared.Silicons.StationAi; // malfAi start
+using Content.Server._Gabystation.GameTicking.Rules.Components; // malfAi end
 
 namespace Content.Server.Administration.Systems;
 
@@ -19,6 +21,7 @@ public sealed partial class AdminVerbSystem
 {
     [Dependency] private readonly AntagSelectionSystem _antag = default!;
     [Dependency] private readonly ZombieSystem _zombie = default!;
+    [Dependency] private readonly SharedStationAiSystem _stationAi = default!;
 
     [ValidatePrototypeId<EntityPrototype>]
     private const string DefaultTraitorRule = "Traitor";
@@ -49,8 +52,29 @@ public sealed partial class AdminVerbSystem
         if (!_adminManager.HasAdminFlag(player, AdminFlags.Fun))
             return;
 
-        if (!HasComp<MindContainerComponent>(args.Target) || !TryComp<ActorComponent>(args.Target, out var targetActor))
+        // MalfAi changes start
+        EntityUid target; // var for station ai target
+
+        if (HasComp<MindContainerComponent>(args.Target))
+        {
+            target = args.Target;
+        }
+        else if (TryComp<StationAiCoreComponent>(args.Target, out var aiCore))
+        {
+            if (!_stationAi.TryGetInsertedAI((args.Target, aiCore), out var aiTarget))
+                return;
+
+            target = aiTarget.Value;
+        }
+        else
+        {
             return;
+        }
+
+        // Malfai end
+        if (!TryComp<ActorComponent>(target, out var targetActor))
+            return;
+
 
         var targetPlayer = targetActor.PlayerSession;
 
@@ -89,7 +113,7 @@ public sealed partial class AdminVerbSystem
             Icon = new SpriteSpecifier.Texture(new("/Textures/Interface/Actions/zombie-turn.png")),
             Act = () =>
             {
-                _zombie.ZombifyEntity(args.Target);
+                _zombie.ZombifyEntity(target);
             },
             Impact = LogImpact.High,
             Message = Loc.GetString("admin-verb-make-zombie"),
@@ -217,5 +241,19 @@ public sealed partial class AdminVerbSystem
         args.Verbs.Add(wizard);
 
         // Malf IA code is not here! see SharedStationAiSystem
+        Verb malfAi = new() //todo: loc strings
+        {
+            Text = Loc.GetString("admin-verb-make-malf"),
+            Category = VerbCategory.Antag,
+            Icon = new SpriteSpecifier.Rsi(new ResPath("/Textures/Mobs/Silicon/station_ai.rsi"), "malf_icon"),
+            Act = () =>
+            {
+                if (HasComp<StationAiCoreComponent>(args.Target))
+                    _antag.ForceMakeAntag<MalfAiRuleComponent>(targetPlayer, "MalfAi");
+            },
+            Impact = LogImpact.High,
+            Message = Loc.GetString("admin-verb-text-make-malf"),
+        };
+        args.Verbs.Add(malfAi);
     }
 }
