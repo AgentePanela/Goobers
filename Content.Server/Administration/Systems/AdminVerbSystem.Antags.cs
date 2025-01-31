@@ -240,7 +240,22 @@ public sealed partial class AdminVerbSystem
         };
         args.Verbs.Add(wizard);
 
-        // Malf IA code is not here! see SharedStationAiSystem
+        // Goobstation - Wizard
+        Verb wizard = new()
+        {
+            Text = Loc.GetString("admin-verb-make-wizard"),
+            Category = VerbCategory.Antag,
+            Icon = new SpriteSpecifier.Rsi(new ResPath("/Textures/Clothing/Head/Hats/wizardhat.rsi"), "icon"),
+            Act = () =>
+            {
+                _antag.ForceMakeAntag<WizardRuleComponent>(targetPlayer, "Wizard");
+            },
+            Impact = LogImpact.High,
+            Message = Loc.GetString("admin-verb-text-make-wizard"),
+        };
+        args.Verbs.Add(wizard);
+
+        // Gabystation - Malf IA
         Verb malfAi = new() //todo: loc strings
         {
             Text = Loc.GetString("admin-verb-make-malf"),
@@ -248,12 +263,12 @@ public sealed partial class AdminVerbSystem
             Icon = new SpriteSpecifier.Rsi(new ResPath("/Textures/Mobs/Silicon/station_ai.rsi"), "malf_icon"),
             Act = () =>
             {
-                if (HasComp<StationAiCoreComponent>(args.Target))
-                    _antag.ForceMakeAntag<MalfAiRuleComponent>(targetPlayer, "MalfAi");
+                _antag.ForceMakeAntag<MalfAiRuleComponent>(targetPlayer, "MalfAi");
             },
             Impact = LogImpact.High,
             Message = Loc.GetString("admin-verb-text-make-malf"),
         };
-        args.Verbs.Add(malfAi);
+        if (HasComp<StationAiCoreComponent>(args.Target))
+            args.Verbs.Add(malfAi);
     }
 }

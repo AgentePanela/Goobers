@@ -1,0 +1,23 @@
+- type: entity
+  abstract: true
+  parent: BaseObjective
+  id: BaseMalfAiObjective
+  components:
+  - type: Objective
+    difficulty: 1.5
+    issuer: objective-issuer-malfunction
+  #- type: RoleRequirement
+  #  roles:
+  #    components:
+  #    - StationAiHeld
+
+- type: entity
+  parent: [BaseMalfAiObjective, BaseSurviveObjective]
+  id: MalfAiSurviveObjective
+  name: Prevent Deactivation
+  description: You must prevent your own deactivation, which crew will be more than willing to do when they take notice of your capabilities.
+  components:
+  - type: Objective
+    icon:
+      sprite: Mobs/Silicon/station_ai.rsi
+      state: malf_icon

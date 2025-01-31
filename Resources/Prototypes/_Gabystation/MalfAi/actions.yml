@@ -1,0 +1,12 @@
+- type: entity
+  id: ModuleMenu
+  name: Module menu
+  description: Opens the module menu.
+  categories: [ HideSpawnMenu ]
+  components:
+  - type: InstantAction
+    itemIconStyle: NoItem
+    icon:
+      sprite: _Gabystation/MalfAi/Actions.rsi
+      state: module_menu
+    event: !type:OpenModuleMenuEvent {}

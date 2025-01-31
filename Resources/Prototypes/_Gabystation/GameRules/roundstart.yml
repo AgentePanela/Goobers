@@ -14,12 +14,12 @@
       allowNonHumans: true
       briefing:
         text: malfai-role-greeting
-        color: Green
+        color: "#5ed7aa"
         sound: "/Audio/Ambience/Antag/emagged_borg.ogg"
       components:
       - type: MalfAi
       whitelist:
-        tags:
-        - StationAi
+        components:
+        - StationAiHeld
       mindRoles:
       - MindRoleMalfAi

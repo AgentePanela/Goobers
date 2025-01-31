@@ -221,4 +221,7 @@
   name: MalfAi Role
   components:
   - type: MindRole
+    antagPrototype: MalfAi
+    exclusiveAntag: true
+  #- type: MalfAiRole
 # malfAi - end

@@ -1,0 +1,14 @@
+- type: storeCategory
+  id: MalfAiUtilityModules
+  name: store-malfai-category-utility
+  priority: 0
+
+- type: storeCategory
+  id: MalfAiDestructiveModules
+  name: store-malfai-category-destructive
+  priority: 1
+
+- type: storeCategory
+  id: MalfAiUpgradeModules
+  name: store-malfai-category-upgrade
+  priority: 2
