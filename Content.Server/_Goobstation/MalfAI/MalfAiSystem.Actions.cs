@@ -4,7 +4,7 @@ using Content.Server.Power.Components;
 using Content.Server.Objectives.Components;
 using Content.Server.Store.Systems;
 using Content.Shared.Emag.Components;
-using Content.Shared._Gabystation.MalfAi;
+using Content.Shared._Goobstation.MalfAi;
 using Content.Shared.FixedPoint;
 using Content.Shared.Actions;
 using Content.Shared.Mind.Components;
@@ -17,7 +17,7 @@ using Robust.Shared.Prototypes;
 using Robust.Server.GameObjects;
 using Timer = Robust.Shared.Timing.Timer;
 
-namespace Content.Server._Gabystation.MalfAi;
+namespace Content.Server._Goobstation.MalfAi;
 
 public sealed partial class MalfAiSystem : EntitySystem
 {

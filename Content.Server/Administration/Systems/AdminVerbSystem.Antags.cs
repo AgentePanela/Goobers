@@ -13,7 +13,7 @@ using Robust.Shared.Player;
 using Robust.Shared.Prototypes;
 using Robust.Shared.Utility;
 using Content.Shared.Silicons.StationAi; // malfAi start
-using Content.Server._Gabystation.GameTicking.Rules.Components; // malfAi end
+using Content.Server._Goobstation.GameTicking.Rules.Components; // malfAi end
 
 namespace Content.Server.Administration.Systems;
 
@@ -53,7 +53,7 @@ public sealed partial class AdminVerbSystem
             return;
 
         // MalfAi changes start
-        EntityUid target; // var for station ai target
+        EntityUid target;
 
         if (HasComp<MindContainerComponent>(args.Target))
         {
@@ -61,10 +61,10 @@ public sealed partial class AdminVerbSystem
         }
         else if (TryComp<StationAiCoreComponent>(args.Target, out var aiCore))
         {
-            if (!_stationAi.TryGetInsertedAI((args.Target, aiCore), out var aiTarget))
+            if (!_stationAi.TryGetHeld((args.Target, aiCore), out var aiTarget))
                 return;
 
-            target = aiTarget.Value;
+            target = aiTarget;
         }
         else
         {
@@ -240,22 +240,7 @@ public sealed partial class AdminVerbSystem
         };
         args.Verbs.Add(wizard);
 
-        // Goobstation - Wizard
-        Verb wizard = new()
-        {
-            Text = Loc.GetString("admin-verb-make-wizard"),
-            Category = VerbCategory.Antag,
-            Icon = new SpriteSpecifier.Rsi(new ResPath("/Textures/Clothing/Head/Hats/wizardhat.rsi"), "icon"),
-            Act = () =>
-            {
-                _antag.ForceMakeAntag<WizardRuleComponent>(targetPlayer, "Wizard");
-            },
-            Impact = LogImpact.High,
-            Message = Loc.GetString("admin-verb-text-make-wizard"),
-        };
-        args.Verbs.Add(wizard);
-
-        // Gabystation - Malf IA
+        // Goobstation - Malf IA
         Verb malfAi = new() //todo: loc strings
         {
             Text = Loc.GetString("admin-verb-make-malf"),

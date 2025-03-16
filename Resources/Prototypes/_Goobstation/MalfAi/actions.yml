@@ -7,6 +7,6 @@
   - type: InstantAction
     itemIconStyle: NoItem
     icon:
-      sprite: _Gabystation/MalfAi/Actions.rsi
+      sprite: _Goobstation/MalfAi/Actions.rsi
       state: module_menu
     event: !type:OpenModuleMenuEvent {}

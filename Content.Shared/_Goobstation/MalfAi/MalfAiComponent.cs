@@ -2,7 +2,7 @@ using Robust.Shared.Prototypes;
 using Robust.Shared.GameStates;
 using Content.Shared.StatusIcon;
 
-namespace Content.Shared._Gabystation.MalfAi;
+namespace Content.Shared._Goobstation.MalfAi;
 
 [RegisterComponent, NetworkedComponent]
 [AutoGenerateComponentState]

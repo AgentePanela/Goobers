@@ -4,11 +4,11 @@ using Content.Server.Actions;
 using Robust.Server.Audio;
 using Robust.Shared.Audio;
 using Content.Shared.FixedPoint;
-using Content.Shared._Gabystation.MalfAi;
+using Content.Shared._Goobstation.MalfAi;
 using Content.Shared.Actions;
 
 
-namespace Content.Server._Gabystation.MalfAi;
+namespace Content.Server._Goobstation.MalfAi;
 
 public sealed partial class MalfAiSystem : EntitySystem
 {

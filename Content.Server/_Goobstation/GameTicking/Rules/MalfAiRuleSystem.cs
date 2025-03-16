@@ -9,11 +9,11 @@ using Robust.Shared.Audio;
 using Robust.Shared.Prototypes;
 using System.Text;
 using Content.Server.GameTicking.Rules;
-using Content.Server._Gabystation.GameTicking.Rules.Components;
-using Content.Shared._Gabystation.MalfAi;
+using Content.Server._Goobstation.GameTicking.Rules.Components;
+using Content.Shared._Goobstation.MalfAi;
 using Content.Shared.Silicons.StationAi;
 
-namespace Content.Server._Gabystation.GameTicking.Rules;
+namespace Content.Server._Goobstation.GameTicking.Rules;
 
 public sealed partial class MalfAiRuleSystem : GameRuleSystem<MalfAiRuleComponent>
 {
