@@ -212,9 +212,6 @@
     exclusiveAntag: true
   - type: MindcontrolledRole
 
-# goob edit end
-
-# malfAi
 - type: entity
   parent: BaseMindRoleAntag
   id: MindRoleMalfAi
@@ -223,5 +220,6 @@
   - type: MindRole
     antagPrototype: MalfAi
     exclusiveAntag: true
-  #- type: MalfAiRole
-# malfAi - end
+  - type: MalfAiRole
+
+# goob edit end

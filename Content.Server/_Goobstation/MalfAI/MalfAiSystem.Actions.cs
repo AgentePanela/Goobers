@@ -25,13 +25,14 @@ public sealed partial class MalfAiSystem : EntitySystem
 
     public void SubscribeAbilities()
     {
-        SubscribeLocalEvent<MalfAiComponent, OpenModuleMenuEvent>(OnOpenModuleMenu);
+        SubscribeLocalEvent<MalfAiComponent, OpenModuleMenuEvent>(OnStore);
     }
-    private void OnOpenModuleMenu(EntityUid uid, MalfAiComponent comp, ref OpenModuleMenuEvent args)
+    private void OnStore(EntityUid uid, MalfAiComponent comp, ref OpenModuleMenuEvent args)
     {
         Log.Debug(uid.ToString());
         if (!TryComp<StoreComponent>(uid, out var store))
             return;
+        Log.Debug("Well...");
 
         _store.ToggleUi(uid, uid, store);
     }

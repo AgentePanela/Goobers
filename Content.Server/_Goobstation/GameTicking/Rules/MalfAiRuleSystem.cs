@@ -21,32 +21,34 @@ public sealed partial class MalfAiRuleSystem : GameRuleSystem<MalfAiRuleComponen
     [Dependency] private readonly AntagSelectionSystem _antag = default!;
     [Dependency] private readonly SharedRoleSystem _role = default!;
     [Dependency] private readonly SharedStationAiSystem _stationAi = default!;
-    public readonly ProtoId<AntagPrototype> MalfAiPrototypeId = "MalfAi";
+    [ValidatePrototypeId<EntityPrototype>] static EntProtoId _mindRoleProto = "MindRoleMalfAi";
     public readonly ProtoId<CurrencyPrototype> Currency = "ControlPower";
 
     public override void Initialize()
     {
         base.Initialize();
 
-        SubscribeLocalEvent<MalfAiRuleComponent, AfterAntagEntitySelectedEvent>(AfterAntagSelected);
+        SubscribeLocalEvent<MalfAiRuleComponent, AfterAntagEntitySelectedEvent>(OnAntagSelect);
     }
-    private void AfterAntagSelected(EntityUid uid, MalfAiRuleComponent comp, ref AfterAntagEntitySelectedEvent args)
+    private void OnAntagSelect(Entity<MalfAiRuleComponent> ent, ref AfterAntagEntitySelectedEvent args)
     {
         Log.Debug("Geting MalfAi result...");
-        if (MakeMalfAi(args, comp))
+        if (TryMakeMalfAi(args.EntityUid, ent.Comp))
             Log.Debug("MalfAi result: True");
         else
             Log.Debug("MalfAi result: False");
     }
-    public bool MakeMalfAi(AfterAntagEntitySelectedEvent args, MalfAiRuleComponent rule)
+    public bool TryMakeMalfAi(EntityUid target, MalfAiRuleComponent rule)
     {
-        EntityUid target = args.EntityUid;
 
-        if (!_mind.TryGetMind(args.EntityUid, out var mindId, out var mind))
+        if (!_mind.TryGetMind(target, out var mindId, out var mind))
         {
-            Log.Debug("Get mind");
+            Log.Debug("Get mind!");
             return false;
         }
+
+        _role.MindAddRole(mindId, _mindRoleProto.Id, mind, true);
+
         /*
         if (!TryComp<StationAiCoreComponent>(mindId, out var aiCore))
         {
@@ -64,12 +66,11 @@ public sealed partial class MalfAiRuleSystem : GameRuleSystem<MalfAiRuleComponen
 
         EnsureComp<MalfAiComponent>(target);
 
-
         var store = EnsureComp<StoreComponent>(target);
         foreach (var category in rule.StoreCategories)
             store.Categories.Add(category);
         store.CurrencyWhitelist.Add(Currency);
-        store.Balance.Add(Currency, 16);
+        store.Balance.Add(Currency, 2);
 
         rule.MalfAiMind.Add(mindId);
 

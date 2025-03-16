@@ -362,6 +362,8 @@ public sealed partial class AntagSelectionSystem : GameRuleSystem<AntagSelection
             // we shouldn't be blocking the entity if they're just a ghost or smth.
             if (!HasComp<GhostComponent>(session.AttachedEntity))
                 antagEnt = session.AttachedEntity;
+
+            Log.Debug(session.AttachedEntity.ToString() ?? "nulao");
         }
         else if (!ignoreSpawner && def.SpawnerPrototype != null) // don't add spawners if we have a player, dummy.
         {

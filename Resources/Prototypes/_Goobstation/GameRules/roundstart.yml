@@ -281,28 +281,32 @@
       mindRoles:
       - MindRoleNukeops
 
-- type: entity
+- type: entity # WHY THIS DOJNT WORKKKKKKKKKKKKKKKKKKKKKKKKKKK
   id: MalfAi
   parent: BaseGameRule
   components:
+  - type: MalfAiRule
   - type: GameRule
     minPlayers: 15
-  - type: MalfAiRule
   - type: AntagSelection
     definitions:
     - prefRoles: [ MalfAi ]
       max: 1
-      playerRatio: 15
+      #playerRatio: 15
       lateJoinAdditional: true
       allowNonHumans: true
+      RollBeforeJob: false
       briefing:
         text: malfai-role-greeting
         color: "#5ed7aa"
         sound: "/Audio/Ambience/Antag/emagged_borg.ogg"
       components:
       - type: MalfAi
-      whitelist:
-        components:
-        - StationAiHeld
+      #whitelist:
+      #  components:
+      #  - StationAiHeld
       mindRoles:
       - MindRoleMalfAi
+  - type: Tag
+    tags:
+      - RoundstartAntag

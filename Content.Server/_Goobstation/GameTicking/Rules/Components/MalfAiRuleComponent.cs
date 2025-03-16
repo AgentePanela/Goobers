@@ -18,8 +18,8 @@ public sealed partial class MalfAiRuleComponent : Component
 
     public readonly List<ProtoId<StoreCategoryPrototype>> StoreCategories = new()
     {
-        "MalfAiDestructiveModules",
-        /*"MalfAiUtilityModules",
+        "MalfAiUtilityModules",
+        /*"MalfAiDestructiveModules",
         "MalfAiUpgradeModules"*/
     };
     public readonly List<ProtoId<EntityPrototype>> Objectives = new()
