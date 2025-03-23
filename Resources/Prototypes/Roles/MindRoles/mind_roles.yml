@@ -212,4 +212,14 @@
     exclusiveAntag: true
   - type: MindcontrolledRole
 
+- type: entity
+  parent: BaseMindRoleAntag
+  id: MindRoleMalfunction
+  name: Malfunction Role
+  description: mind-role-malfunction-description
+  components:
+  - type: MindRole
+    antagPrototype: Malfunction
+  - type: MalfunctionRole
+
 # goob edit end

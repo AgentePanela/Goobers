@@ -183,3 +183,26 @@
   - type: Tag
     tags:
       - MidroundAntag
+
+- type: entity
+  parent: BaseGameRule
+  id: Malfunction
+  components:
+  - type: MalfunctionRule
+  - type: AntagSelection
+    agentName: malfunction-round-end-agent-name
+    definitions:
+    - prefRoles: [ Malfunction ]
+      max: 1
+      playerRatio: 10
+      lateJoinAdditional: true
+      briefing:
+        text: malfunction-role-greeting
+        color: "#5ed7aa"
+        sound: "/Audio/Ambience/Antag/emagged_borg.ogg"
+      allowNonHumans: true
+      whitelist:
+        tags:
+        - StationAi
+      mindRoles:
+      - MindRoleMalfunction

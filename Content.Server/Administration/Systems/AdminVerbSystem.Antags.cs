@@ -12,6 +12,8 @@ using Content.Shared.Verbs;
 using Robust.Shared.Player;
 using Robust.Shared.Prototypes;
 using Robust.Shared.Utility;
+using Content.Shared.Silicons.StationAi;
+using Content.Server._Goobstation.GameTicking.Rules.Components;
 
 namespace Content.Server.Administration.Systems;
 
@@ -19,6 +21,7 @@ public sealed partial class AdminVerbSystem
 {
     [Dependency] private readonly AntagSelectionSystem _antag = default!;
     [Dependency] private readonly ZombieSystem _zombie = default!;
+    [Dependency] private readonly SharedStationAiSystem _stationAi = default!; // Goobstation - MalfAi
 
     [ValidatePrototypeId<EntityPrototype>]
     private const string DefaultTraitorRule = "Traitor";
@@ -38,6 +41,9 @@ public sealed partial class AdminVerbSystem
     [ValidatePrototypeId<StartingGearPrototype>]
     private const string PirateGearId = "PirateGear";
 
+    [ValidatePrototypeId<EntityPrototype>] // Malf Ai
+    private const string DefaultMalfunctionRule = "Malfunction";
+
     // All antag verbs have names so invokeverb works.
     private void AddAntagVerbs(GetVerbsEvent<Verb> args)
     {
@@ -45,11 +51,29 @@ public sealed partial class AdminVerbSystem
             return;
 
         var player = actor.PlayerSession;
+        // MalfAi changes - start
+        EntityUid target;
 
         if (!_adminManager.HasAdminFlag(player, AdminFlags.Fun))
             return;
 
-        if (!HasComp<MindContainerComponent>(args.Target) || !TryComp<ActorComponent>(args.Target, out var targetActor))
+        if (HasComp<MindContainerComponent>(args.Target))
+        {
+            target = args.Target;
+        }
+        else if (TryComp<StationAiCoreComponent>(args.Target, out var aiCore))
+        {
+            if (!_stationAi.TryGetHeld((args.Target, aiCore), out var aiTarget))
+                return;
+
+            target = aiTarget;
+        }
+        else
+        {
+            return;
+        }
+        // MalfAi changes - end
+        if (!TryComp<ActorComponent>(target, out var targetActor))
             return;
 
         var targetPlayer = targetActor.PlayerSession;
@@ -198,7 +222,7 @@ public sealed partial class AdminVerbSystem
             },
             Impact = LogImpact.High,
             Message = Loc.GetString("admin-verb-text-make-blob"),
-	    };
+        };
         args.Verbs.Add(blobAntag);
 
         // Goobstation - Wizard
@@ -215,5 +239,21 @@ public sealed partial class AdminVerbSystem
             Message = Loc.GetString("admin-verb-text-make-wizard"),
         };
         args.Verbs.Add(wizard);
+
+        // Goobstation - MalfAi
+        Verb malfunction = new()
+        {
+            Text = Loc.GetString("admin-verb-text-make-malfunction"),
+            Category = VerbCategory.Antag,
+            Icon = new SpriteSpecifier.Rsi(new ResPath("/Textures/Objects/Fun/toys.rsi"), "AI"),
+            Act = () =>
+            {
+                _antag.ForceMakeAntag<MalfunctionRuleComponent>(targetPlayer, DefaultMalfunctionRule);
+            },
+            Impact = LogImpact.High,
+            Message = Loc.GetString("admin-verb-make-malfunction"),
+        };
+        //if (HasComp<StationAiCoreComponent>(args.Target))
+            args.Verbs.Add(malfunction);
     }
 }
