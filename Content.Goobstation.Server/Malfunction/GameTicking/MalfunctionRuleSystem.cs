@@ -3,14 +3,13 @@ using Content.Server.Antag;
 using Content.Server.Mind;
 using Content.Server.Silicons.Laws;
 using Robust.Shared.Prototypes;
-using Content.Server._Goobstation.GameTicking.Rules.Components;
 using Content.Shared.Roles;
-using Content.Shared._Goobstation.Malfunction;
+using Content.Goobstation.Shared.Malfunction;
 using Content.Shared.Silicons.Laws.Components;
 using Content.Shared.Silicons.Laws;
 using Robust.Shared.Random;
 
-namespace Content.Server._Goobstation.GameTicking.Rules;
+namespace Content.Goobstation.Server.Malfunction.GameTicking;
 
 public sealed class MalfunctionRuleSystem : GameRuleSystem<MalfunctionRuleComponent>
 {

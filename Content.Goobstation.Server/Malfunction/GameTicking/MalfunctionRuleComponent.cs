@@ -1,7 +1,7 @@
 using Content.Shared.Silicons.Laws;
 using Robust.Shared.Prototypes;
 
-namespace Content.Server._Goobstation.GameTicking.Rules.Components;
+namespace Content.Goobstation.Server.Malfunction.GameTicking;
 
 [RegisterComponent, Access(typeof(MalfunctionRuleSystem))]
 public sealed partial class MalfunctionRuleComponent : Component

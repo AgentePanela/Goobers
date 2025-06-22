@@ -20,6 +20,7 @@ using Content.Shared.Mind.Components;
 using Content.Shared.Verbs;
 using Robust.Shared.Player;
 using Robust.Shared.Utility;
+using Content.Shared.Silicons.StationAi;
 
 namespace Content.Goobstation.Server.Administration.Systems;
 
@@ -27,6 +28,10 @@ public sealed partial class GoobAdminVerbSystem
 {
     [Dependency] private readonly AntagSelectionSystem _antag = default!;
     [Dependency] private readonly IAdminManager _admin = default!;
+    [Dependency] private readonly SharedStationAiSystem _stationAi = default!;
+
+    [ValidatePrototypeId<EntityPrototype>]
+    private const string DefaultMalfunctionRule = "Malfunction";
 
     private void AddAntagVerbs(GetVerbsEvent<Verb> args)
     {
@@ -80,6 +85,22 @@ public sealed partial class GoobAdminVerbSystem
             Message = Loc.GetString("admin-verb-make-devil"),
         };
         args.Verbs.Add(devilAntag);
+
+        // MalfAi
+        Verb malfunction = new()
+        {
+            Text = Loc.GetString("admin-verb-text-make-malfunction"),
+            Category = VerbCategory.Antag,
+            Icon = new SpriteSpecifier.Rsi(new ResPath("/Textures/Objects/Fun/toys.rsi"), "AI"),
+            Act = () =>
+            {
+                _antag.ForceMakeAntag<MalfunctionRuleComponent>(targetPlayer, DefaultMalfunctionRule);
+            },
+            Impact = LogImpact.High,
+            Message = Loc.GetString("admin-verb-make-malfunction"),
+        };
+        //if (HasComp<StationAiCoreComponent>(args.Target))
+        args.Verbs.Add(malfunction);
     }
 
     public bool AntagVerbAllowed(GetVerbsEvent<Verb> args, [NotNullWhen(true)] out ICommonSession? target)
@@ -87,17 +108,34 @@ public sealed partial class GoobAdminVerbSystem
         target = null;
 
         if (!TryComp<ActorComponent>(args.User, out var actor))
-            return false;
+            return;
 
         var player = actor.PlayerSession;
 
-        if (!_admin.HasAdminFlag(player, AdminFlags.Fun))
-            return false;
+        EntityUid target;
 
-        if (!HasComp<MindContainerComponent>(args.Target) || !TryComp<ActorComponent>(args.Target, out var targetActor))
-            return false;
+        if (!_adminManager.HasAdminFlag(player, AdminFlags.Fun))
+            return;
 
-        target = targetActor.PlayerSession;
+        if (HasComp<MindContainerComponent>(args.Target))
+        {
+            target = args.Target;
+        }
+        else if (TryComp<StationAiCoreComponent>(args.Target, out var aiCore))
+        {
+            if (!_stationAi.TryGetHeld((args.Target, aiCore), out var aiTarget))
+                return;
+
+            target = aiTarget;
+        }
+        else
+        {
+            return;
+        }
+        if (!TryComp<ActorComponent>(target, out var targetActor))
+            return;
+
+        var target = targetActor.PlayerSession;
         return true;
     }
 }
