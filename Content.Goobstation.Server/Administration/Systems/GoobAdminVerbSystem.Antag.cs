@@ -21,6 +21,8 @@ using Content.Shared.Verbs;
 using Robust.Shared.Player;
 using Robust.Shared.Utility;
 using Content.Shared.Silicons.StationAi;
+using Robust.Shared.Prototypes;
+using Content.Goobstation.Server.Malfunction.GameTicking;
 
 namespace Content.Goobstation.Server.Administration.Systems;
 
@@ -108,34 +110,33 @@ public sealed partial class GoobAdminVerbSystem
         target = null;
 
         if (!TryComp<ActorComponent>(args.User, out var actor))
-            return;
+            return false;
 
         var player = actor.PlayerSession;
 
-        EntityUid target;
+        EntityUid playerTarget;
 
-        if (!_adminManager.HasAdminFlag(player, AdminFlags.Fun))
-            return;
+        if (!_admin.HasAdminFlag(player, AdminFlags.Fun))
+            return false;
 
         if (HasComp<MindContainerComponent>(args.Target))
         {
-            target = args.Target;
+            playerTarget = args.Target;
         }
         else if (TryComp<StationAiCoreComponent>(args.Target, out var aiCore))
         {
             if (!_stationAi.TryGetHeld((args.Target, aiCore), out var aiTarget))
-                return;
+                return false;
 
-            target = aiTarget;
+            playerTarget = aiTarget;
         }
         else
-        {
-            return;
-        }
-        if (!TryComp<ActorComponent>(target, out var targetActor))
-            return;
+            return false;
 
-        var target = targetActor.PlayerSession;
+        if (!TryComp<ActorComponent>(playerTarget, out var targetActor))
+            return false;
+
+        target = targetActor.PlayerSession;
         return true;
     }
 }
