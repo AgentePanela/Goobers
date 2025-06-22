@@ -1,3 +1,10 @@
+# SPDX-FileCopyrightText: 2025 Aiden <28298836+Aidenkrz@users.noreply.github.com>
+# SPDX-FileCopyrightText: 2025 Aiden <aiden@djkraz.com>
+# SPDX-FileCopyrightText: 2025 Solstice <solsticeofthewinter@gmail.com>
+# SPDX-FileCopyrightText: 2025 coderabbitai[bot] <136622811+coderabbitai[bot]@users.noreply.github.com>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 - type: entity
   id: ActionVaporizeFreeman
   name: Vaporize
@@ -18,7 +25,8 @@
       sprite: _Goobstation/Wizard/actions.rsi # todo - change this
       state: gib
     event: !type:SmiteSpellEvent
-      speech: action-speech-implant-vaporize
+  - type: SpeakOnAction
+    sentence: action-speech-implant-vaporize
 
 - type: entity
   id: ActionBlinkFreeman
@@ -71,7 +79,8 @@
       sprite: _Goobstation/Wizard/actions.rsi # Todo - Change this, but idc.
       state: time
     event: !type:StopTimeEvent
-      speech: action-speech-implant-stoptime
+  - type: SpeakOnAction
+    sentence: action-speech-implant-stoptime
   - type: Magic
     requiresClothes: false
     requiresSpeech: true

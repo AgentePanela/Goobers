@@ -1,3 +1,13 @@
+# SPDX-FileCopyrightText: 2024 AJCM <AJCM@tutanota.com>
+# SPDX-FileCopyrightText: 2024 Leon Friedrich <60421075+ElectroJr@users.noreply.github.com>
+# SPDX-FileCopyrightText: 2025 ActiveMammmoth <140334666+ActiveMammmoth@users.noreply.github.com>
+# SPDX-FileCopyrightText: 2025 ActiveMammmoth <kmcsmooth@gmail.com>
+# SPDX-FileCopyrightText: 2025 Aiden <28298836+Aidenkrz@users.noreply.github.com>
+# SPDX-FileCopyrightText: 2025 gus <august.eymann@gmail.com>
+# SPDX-FileCopyrightText: 2025 keronshb <54602815+keronshb@users.noreply.github.com>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 - type: entity
   id: ActionSummonGhosts
   name: Summon Ghosts
@@ -157,8 +167,9 @@
         orGroup: Guns
       - id: RevolverCapGunFake
         orGroup: Guns
-      speech: action-speech-spell-summon-guns
-      
+  - type: SpeakOnAction
+    sentence: action-speech-spell-summon-guns
+
 - type: entity
   id: ActionSummonMagic
   name: Summon Magic
@@ -203,4 +214,5 @@
         orGroup: Magics
       - id: RGBStaff
         orGroup: Magics
-      speech: action-speech-spell-summon-magic
+  - type: SpeakOnAction
+    sentence: action-speech-spell-summon-magic
