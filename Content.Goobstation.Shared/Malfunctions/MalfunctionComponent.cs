@@ -9,7 +9,7 @@ public sealed partial class MalfunctionComponent : Component
 {
 
     [DataField]
-    public List<ProtoId<EntityPrototype>> BaseMalfunctionActions = new()
+    public List<ProtoId<EntityPrototype>> BaseActions = new()
     {
         "ModuleMenu"/*,
         "Cyborg Hijack"*/

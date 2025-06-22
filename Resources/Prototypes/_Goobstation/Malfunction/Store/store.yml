@@ -1,0 +1,9 @@
+- type: currency
+  id: ControlPower
+  displayName: store-currency-display-controlpower
+  canWithdraw: false
+
+- type: storeCategory
+  id: MalfAiUtilityModules
+  name: store-malfai-category-utility
+  priority: 0
