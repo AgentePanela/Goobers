@@ -12,11 +12,13 @@ public sealed partial class StationAiRequirePowerComponent : Component
     public float Wattage = 10f;
 
     [DataField]
-    public TimeSpan WarningDelay = TimeSpan.FromSeconds(4f);
+    public bool ApcOffWarned = false;
 
-    [ViewVariables]
-    public TimeSpan LastWarning;
+    [DataField]
+    public int LastAnnouncedPower = 100;
 
     [DataField]
     public SoundSpecifier? WarningSound = new SoundPathSpecifier("/Audio/Misc/notice2.ogg");
+    [DataField]
+    public SoundSpecifier? DeathSound = new SoundPathSpecifier("/Audio/Misc/notice2.ogg");
 }

@@ -1,21 +1,30 @@
 using Content.Server.Power.Components;
 using Content.Server.Power.EntitySystems;
+using Content.Shared.Actions;
 using Content.Shared.Chat;
+using Content.Shared.Movement.Components;
 using Content.Shared.Popups;
 using Content.Shared.Power;
 using Content.Shared.Silicons.StationAi;
+using Content.Shared.StationAi;
 using Robust.Shared.Player;
+using Robust.Shared.Prototypes;
 
 namespace Content.Server.Silicons.StationAi;
 
 public sealed partial class StationAiSystem
 {
     [Dependency] private readonly BatterySystem _battery = default!;
+    [Dependency] private readonly SharedActionsSystem _action = default!;
+    [Dependency] private readonly SharedAppearanceSystem _appearance = default!;
 
+    [ValidatePrototypeId<EntityPrototype>]
+    private readonly string _deathActionId = "ActionCritSuccumb";
     private void InitializePower()
     {
         SubscribeLocalEvent<StationAiRequirePowerComponent, PowerChangedEvent>(OnCorePowerChange);
         SubscribeLocalEvent<StationAiRequirePowerComponent, IntellicardAttemptEvent>(OnIntellicardAttempt);
+        SubscribeLocalEvent<StationAiRequirePowerComponent, ChargeChangedEvent>(OnCoreBatteryChange);
     }
 
     private void UpdatePower(float frameTime)
@@ -23,6 +32,13 @@ public sealed partial class StationAiSystem
         var query = EntityQueryEnumerator<StationAiRequirePowerComponent, StationAiCoreComponent, BatteryComponent>();
         while (query.MoveNext(out var uid, out var aiPower, out var core, out var battery))
         {
+            // Do not use battery power when theres no player in this core
+            if (!TryGetHeld((uid, core), out _))
+            {
+                _battery.SetCharge(uid, battery.MaxCharge, battery);
+                continue;
+            }
+
             if (aiPower.IsPowered)
             {
                 if (!TryComp<ApcPowerReceiverComponent>(uid, out var power))
@@ -49,7 +65,19 @@ public sealed partial class StationAiSystem
 
     private void OnCorePowerChange(EntityUid uid, StationAiRequirePowerComponent component, ref PowerChangedEvent args)
     {
-        UpdateState(uid, component);
+        UpdatePoweredState(uid, component);
+    }
+    private void OnCoreBatteryChange(EntityUid uid, StationAiRequirePowerComponent comp, ref ChargeChangedEvent args)
+    {
+        var percent = (int) ((args.Charge / args.MaxCharge) * 100);
+        var clamp = Math.Clamp((percent / 25) * 25, 0, 100);
+
+        if (clamp < comp.LastAnnouncedPower && clamp > 0)
+        {
+            var msg = Loc.GetString("ai-power-warning-backup", ("power", clamp));
+            AnnounceAi(uid, msg, comp.WarningSound);
+            comp.LastAnnouncedPower = clamp;
+        }
     }
 
     private void OnIntellicardAttempt(EntityUid uid, StationAiRequirePowerComponent component, IntellicardAttemptEvent args)
@@ -61,7 +89,7 @@ public sealed partial class StationAiSystem
         _popup.PopupEntity(Loc.GetString("base-computer-ui-component-not-powered", ("machine", uid)), args.User, args.User, PopupType.MediumCaution);
     }
 
-    private void UpdateState(EntityUid uid, StationAiRequirePowerComponent component)
+    private void UpdatePoweredState(EntityUid uid, StationAiRequirePowerComponent component)
     {
         if (!TryComp<ApcPowerReceiverComponent>(uid, out var receiver))
             return;
@@ -73,6 +101,7 @@ public sealed partial class StationAiSystem
             return;
 
         component.IsPowered = receiver.Powered;
+        component.ApcOffWarned = !receiver.Powered;
 
         if (receiver.Powered)
         {
@@ -80,7 +109,7 @@ public sealed partial class StationAiSystem
         }
         else
         {
-            if (_timing.CurTime < component.LastWarning + component.WarningDelay)
+            if (component.ApcOffWarned)
                 return;
 
             if (!TryGetHeld((uid, core), out var ai))
@@ -89,18 +118,46 @@ public sealed partial class StationAiSystem
             var msg = Loc.GetString("ai-power-warning");
             AnnounceAi(ai, msg, component.WarningSound);
 
-            component.LastWarning = _timing.CurTime;
-
             // dont run turn off now as it will instantly kill the ai
         }
     }
 
     private void TurnOff(EntityUid uid, StationAiCoreComponent core)
     {
-        ClearEye((uid, core));
+        // TODO: state
+        //* What happen when theres no holder and the AI dies? (like, job slot)
 
         if (TryGetHeld((uid, core), out var ai))
-            EntityManager.DeleteEntity(ai);
+            return;
+
+        // TODO: Radio
+
+        // Do the death message
+        TryComp<StationAiRequirePowerComponent>(uid, out var comp);
+        var msg = Loc.GetString("ai-power-death-message");
+        AnnounceAi(ai, msg, comp?.DeathSound);
+
+        // Remove vision
+        if (TryComp<StationAiVisionComponent>(core.RemoteEntity, out var vision))
+        {
+            vision.Range = 1.5f; // Like crit state
+        }
+        // Disable eye moving
+        if (TryComp<InputMoverComponent>(ai, out var mover))
+        {
+            mover.CanMove = false;
+            if (core.RemoteEntity is not null) // TP holder to core pos
+                _xforms.DropNextTo(core.RemoteEntity.Value, uid);
+        }
+        // Add dead avatar //todo: pass this to dead state in shared side
+        //_appearance.SetData(ai, StationAiVisualState.Key, StationAiState.Dead);
+
+        // Remove all actions and add the become a ghost action
+        RemComp<ActionGrantComponent>(ai);
+        _action.AddAction(uid, _deathActionId);
+
+        //EntityManager.DeleteEntity(ai);
+        //ClearEye((uid, core));
     }
 
     private void TurnOn(EntityUid uid, StationAiCoreComponent core)

@@ -131,6 +131,11 @@ public sealed partial class StationAiSystem : SharedStationAiSystem
             _roles.MindPlaySound(mindId, cue);
     }
 
+    public void SetupDeathState(EntityUid uid)
+    {
+        //TODO ?
+    }
+
     private void AnnounceSnip(EntityUid entity)
     {
         var xform = Transform(entity);

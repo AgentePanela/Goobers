@@ -54,4 +54,6 @@ station-ai-hologram-face = Disembodied head
 station-ai-hologram-cat = Cat form
 station-ai-hologram-dog = Corgi form
 
-ai-power-warning = Your core is losing power.
+ai-power-warning = Your core backup power reserve is loosing power.
+ai-power-death-message = Your core has shutdown after loose the entire backup power reserve.
+ai-power-warning-backup = Your core backup power are at {$power}%!
