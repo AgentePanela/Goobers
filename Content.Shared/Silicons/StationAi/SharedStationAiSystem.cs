@@ -483,6 +483,8 @@ public abstract partial class SharedStationAiSystem : EntitySystem
         QueueDel(ent.Comp.RemoteEntity);
         ent.Comp.RemoteEntity = null;
         Dirty(ent);
+        if (ent.Comp.State is StationAiState.Occupied) // Goob change
+            ent.Comp.State = StationAiState.Empty;
     }
 
     protected void AttachEye(Entity<StationAiCoreComponent> ent)
@@ -498,6 +500,7 @@ public abstract partial class SharedStationAiSystem : EntitySystem
 
         // Attach them to the portable eye that can move around.
         var user = container.ContainedEntities[0];
+        ent.Comp.State = StationAiState.Occupied; // Goob change
 
         if (TryComp(user, out EyeComponent? eyeComp))
         {
@@ -558,7 +561,7 @@ public abstract partial class SharedStationAiSystem : EntitySystem
         ClearEye(ent);
     }
 
-    private void UpdateAppearance(Entity<StationAiHolderComponent?> entity)
+    public void UpdateAppearance(Entity<StationAiHolderComponent?> entity)
     {
         if (!Resolve(entity.Owner, ref entity.Comp, false))
             return;
@@ -566,8 +569,11 @@ public abstract partial class SharedStationAiSystem : EntitySystem
         // Todo: when AIs can die, add a check to see if the AI is in the 'dead' state
         var state = StationAiState.Empty;
 
-        if (_containers.TryGetContainer(entity.Owner, StationAiHolderComponent.Container, out var container) && container.Count > 0)
-            state = StationAiState.Occupied;
+        //if (_containers.TryGetContainer(entity.Owner, StationAiHolderComponent.Container, out var container) && container.Count > 0)
+        //    state = StationAiState.Occupied;
+
+        if (TryGetCore(entity, out var core) && core.Comp is not null) // Goob change
+            state = core.Comp.State;
 
         // If the entity is a station AI core, attempt to customize its appearance
         if (TryComp<StationAiCoreComponent>(entity, out var stationAiCore))

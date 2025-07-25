@@ -7,6 +7,7 @@ using Content.Shared.Popups;
 using Content.Shared.Power;
 using Content.Shared.Silicons.StationAi;
 using Content.Shared.StationAi;
+using Robust.Shared.Containers;
 using Robust.Shared.Player;
 using Robust.Shared.Prototypes;
 
@@ -17,6 +18,8 @@ public sealed partial class StationAiSystem
     [Dependency] private readonly BatterySystem _battery = default!;
     [Dependency] private readonly SharedActionsSystem _action = default!;
     [Dependency] private readonly SharedAppearanceSystem _appearance = default!;
+    [Dependency] private readonly SharedStationAiSystem _ai = default!;
+    [Dependency] private readonly SharedContainerSystem _containers = default!;
 
     [ValidatePrototypeId<EntityPrototype>]
     private readonly string _deathActionId = "ActionCritSuccumb";
@@ -38,6 +41,7 @@ public sealed partial class StationAiSystem
                 _battery.SetCharge(uid, battery.MaxCharge, battery);
                 continue;
             }
+            //Log.Debug("power update!");
 
             if (aiPower.IsPowered)
             {
@@ -66,6 +70,7 @@ public sealed partial class StationAiSystem
     private void OnCorePowerChange(EntityUid uid, StationAiRequirePowerComponent component, ref PowerChangedEvent args)
     {
         UpdatePoweredState(uid, component);
+        Log.Debug("OnCorePowerChange!");
     }
     private void OnCoreBatteryChange(EntityUid uid, StationAiRequirePowerComponent comp, ref ChargeChangedEvent args)
     {
@@ -91,6 +96,7 @@ public sealed partial class StationAiSystem
 
     private void UpdatePoweredState(EntityUid uid, StationAiRequirePowerComponent component)
     {
+        Log.Debug("Update powered state!");
         if (!TryComp<ApcPowerReceiverComponent>(uid, out var receiver))
             return;
 
@@ -100,16 +106,18 @@ public sealed partial class StationAiSystem
         if (!TryComp<StationAiCoreComponent>(uid, out var core))
             return;
 
+        Log.Debug("Update powered state 2!");
+
         component.IsPowered = receiver.Powered;
-        component.ApcOffWarned = !receiver.Powered;
 
         if (receiver.Powered)
         {
             TurnOn(uid, core);
+            component.ApcOffWarned = !receiver.Powered;
         }
         else
         {
-            if (component.ApcOffWarned)
+            if (component.ApcOffWarned is true)
                 return;
 
             if (!TryGetHeld((uid, core), out var ai))
@@ -124,40 +132,28 @@ public sealed partial class StationAiSystem
 
     private void TurnOff(EntityUid uid, StationAiCoreComponent core)
     {
-        // TODO: state
-        //* What happen when theres no holder and the AI dies? (like, job slot)
+        core.State = StationAiState.Dead;
 
-        if (TryGetHeld((uid, core), out var ai))
+        if (!TryGetHeld((uid, core), out var ai))
             return;
-
-        // TODO: Radio
 
         // Do the death message
         TryComp<StationAiRequirePowerComponent>(uid, out var comp);
         var msg = Loc.GetString("ai-power-death-message");
         AnnounceAi(ai, msg, comp?.DeathSound);
 
-        // Remove vision
-        if (TryComp<StationAiVisionComponent>(core.RemoteEntity, out var vision))
-        {
-            vision.Range = 1.5f; // Like crit state
-        }
-        // Disable eye moving
-        if (TryComp<InputMoverComponent>(ai, out var mover))
-        {
-            mover.CanMove = false;
-            if (core.RemoteEntity is not null) // TP holder to core pos
-                _xforms.DropNextTo(core.RemoteEntity.Value, uid);
-        }
-        // Add dead avatar //todo: pass this to dead state in shared side
-        //_appearance.SetData(ai, StationAiVisualState.Key, StationAiState.Dead);
+        ClearEye((uid, core));
+        EntityManager.DeleteEntity(ai);
 
-        // Remove all actions and add the become a ghost action
-        RemComp<ActionGrantComponent>(ai);
-        _action.AddAction(uid, _deathActionId);
+        if (!_containers.TryGetContainer(uid, StationAiHolderComponent.Container, out var container) ||
+            container.ContainedEntities.Count != 1)
+        {
+            return;
+        }
 
-        //EntityManager.DeleteEntity(ai);
-        //ClearEye((uid, core));
+        _ai.UpdateAppearance(container.ContainedEntities[0]);
+
+        // todo: recreate the dead state
     }
 
     private void TurnOn(EntityUid uid, StationAiCoreComponent core)

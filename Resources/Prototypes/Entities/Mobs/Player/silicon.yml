@@ -385,7 +385,7 @@
     stateAlertDict:
       Alive: BorgHealth
       Dead: BorgDead
-    showOverlays: false
+    showOverlays: true
     allowRevives: false
 
 # The job-ready version of an AI spawn.
